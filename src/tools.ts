@@ -703,10 +703,7 @@ function extractFitFromZip(
         return { name: `${activityId}.fit`, data: Buffer.from(data) };
       }
       if (method === 8) {
-        const compressed = buf.subarray(
-          dataStart,
-          dataStart + compressedSize
-        );
+        const compressed = buf.subarray(dataStart, dataStart + compressedSize);
         const data = inflateRawSync(compressed);
         return { name: `${activityId}.fit`, data };
       }
