@@ -677,7 +677,6 @@ function extractFitFromZip(
 
       if (name.endsWith(".fit") && compressionMethod === 8) {
         // Deflate compressed — use Node's zlib
-        const { inflateRawSync } = await_import_zlib();
         const compressed = buf.subarray(dataStart, dataStart + compressedSize);
         const data = inflateRawSync(compressed);
         return { name: `${activityId}.fit`, data };
@@ -692,7 +691,4 @@ function extractFitFromZip(
   return null;
 }
 
-function await_import_zlib() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require("node:zlib") as typeof import("node:zlib");
-}
+import { inflateRawSync } from "node:zlib";
