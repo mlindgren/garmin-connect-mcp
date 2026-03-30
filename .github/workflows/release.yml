@@ -55,6 +55,6 @@ jobs:
       - name: Publish to npm
         run: npm publish --provenance --access public
       - name: Create GitHub Release
-        run: gh release create ${{ steps.version.outputs.version }} --generate-notes
+        run: gh release create ${{ steps.version.outputs.version }} --target main --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
