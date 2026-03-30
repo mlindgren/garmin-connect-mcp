@@ -9,7 +9,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerTools } from "./tools.js";
-import { existsSync, rmSync, mkdirSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { getSharedClient } from "./garmin-client.js";
 
 const TEST_FIT_DIR = "/tmp/garmin-mcp-test-fit";
@@ -84,7 +84,7 @@ const tests: TestCase[] = [
     name: "get-activity",
     run: async (server) => {
       const result = await callTool(server, "get-activity", {
-        activityId: activityId!,
+        activityId: activityId,
       });
       if (result.isError) throw new Error(getToolText(result));
       const data = getToolJson(result) as { summaryDTO?: unknown };
@@ -95,7 +95,7 @@ const tests: TestCase[] = [
     name: "get-activity-details",
     run: async (server) => {
       const result = await callTool(server, "get-activity-details", {
-        activityId: activityId!,
+        activityId: activityId,
         maxChartSize: 10000,
       });
       if (result.isError) throw new Error(getToolText(result));
@@ -107,7 +107,7 @@ const tests: TestCase[] = [
     name: "get-activity-splits",
     run: async (server) => {
       const result = await callTool(server, "get-activity-splits", {
-        activityId: activityId!,
+        activityId: activityId,
       });
       if (result.isError) throw new Error(getToolText(result));
       const data = getToolJson(result) as { lapDTOs?: unknown[] };
@@ -118,7 +118,7 @@ const tests: TestCase[] = [
     name: "get-activity-hr-zones",
     run: async (server) => {
       const result = await callTool(server, "get-activity-hr-zones", {
-        activityId: activityId!,
+        activityId: activityId,
       });
       if (result.isError) throw new Error(getToolText(result));
       const data = getToolJson(result) as unknown[];
@@ -130,7 +130,7 @@ const tests: TestCase[] = [
     name: "get-activity-polyline",
     run: async (server) => {
       const result = await callTool(server, "get-activity-polyline", {
-        activityId: activityId!,
+        activityId: activityId,
       });
       if (result.isError) throw new Error(getToolText(result));
     },
@@ -139,7 +139,7 @@ const tests: TestCase[] = [
     name: "get-activity-weather",
     run: async (server) => {
       const result = await callTool(server, "get-activity-weather", {
-        activityId: activityId!,
+        activityId: activityId,
       });
       if (result.isError) throw new Error(getToolText(result));
     },
@@ -150,7 +150,7 @@ const tests: TestCase[] = [
       // Clean up from previous runs
       if (existsSync(TEST_FIT_DIR)) rmSync(TEST_FIT_DIR, { recursive: true });
       const result = await callTool(server, "download-fit", {
-        activityId: activityId!,
+        activityId: activityId,
         outputDir: TEST_FIT_DIR,
       });
       if (result.isError) throw new Error(getToolText(result));
@@ -301,7 +301,7 @@ const tests: TestCase[] = [
 ];
 
 // Resolved during bootstrap
-let activityId: string;
+let activityId = "";
 
 async function main() {
   console.log("garmin-connect-mcp integration tests (tool-level)\n");
