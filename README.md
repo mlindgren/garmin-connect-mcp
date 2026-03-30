@@ -1,5 +1,11 @@
 # garmin-connect-mcp
 
+[![CI](https://github.com/etweisberg/garmin-connect-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/etweisberg/garmin-connect-mcp/actions/workflows/ci.yml)
+[![Release](https://github.com/etweisberg/garmin-connect-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/etweisberg/garmin-connect-mcp/actions/workflows/release.yml)
+[![npm](https://img.shields.io/npm/v/@etweisberg/garmin-connect-mcp)](https://www.npmjs.com/package/@etweisberg/garmin-connect-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/@etweisberg/garmin-connect-mcp)](https://www.npmjs.com/package/@etweisberg/garmin-connect-mcp)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 MCP server for Garmin Connect. Access your activities, health stats, sleep data, FIT files, and more from Claude Code or any MCP client.
 
 ## Why This Exists
