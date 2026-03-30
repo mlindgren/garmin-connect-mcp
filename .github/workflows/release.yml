@@ -43,9 +43,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Check if release commit
+        id: check
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          if [[ "$MSG" == release:* ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Bump version
+        if: steps.check.outputs.skip == 'false'
         id: version
         run: |
+          git pull --rebase origin main
           NEW_VERSION=$(npm version patch --no-git-tag-version)
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           git add package.json package-lock.json
@@ -53,8 +64,10 @@ jobs:
           git tag "$NEW_VERSION"
           git push --follow-tags
       - name: Publish to npm
+        if: steps.check.outputs.skip == 'false'
         run: npm publish --provenance --access public
       - name: Create GitHub Release
+        if: steps.check.outputs.skip == 'false'
         run: |
           sleep 5
           gh release create ${{ steps.version.outputs.version }} --verify-tag --generate-notes
