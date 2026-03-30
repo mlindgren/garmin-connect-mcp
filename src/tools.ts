@@ -644,51 +644,75 @@ Count total passed vs failed at the end.`);
   );
 }
 
+import { inflateRawSync } from "node:zlib";
+
 /**
- * Minimal zip extraction — finds and extracts the first .fit file from a zip buffer.
- * Avoids needing a zip library dependency.
+ * Minimal zip extraction — finds the first .fit file using the central
+ * directory (which always has correct sizes, unlike local headers that
+ * may use data descriptors with size=0).
  */
 function extractFitFromZip(
   buf: Buffer,
   activityId: string
 ): { name: string; data: Buffer } | null {
-  // ZIP local file header signature: PK\x03\x04
-  let offset = 0;
-  while (offset < buf.length - 30) {
+  // Find End of Central Directory (EOCD): PK\x05\x06
+  let eocdOffset = buf.length - 22;
+  while (eocdOffset >= 0) {
     if (
-      buf[offset] === 0x50 &&
-      buf[offset + 1] === 0x4b &&
-      buf[offset + 2] === 0x03 &&
-      buf[offset + 3] === 0x04
-    ) {
-      const compressionMethod = buf.readUInt16LE(offset + 8);
-      const compressedSize = buf.readUInt32LE(offset + 18);
-      const uncompressedSize = buf.readUInt32LE(offset + 22);
-      const nameLength = buf.readUInt16LE(offset + 26);
-      const extraLength = buf.readUInt16LE(offset + 28);
-      const name = buf.toString("utf-8", offset + 30, offset + 30 + nameLength);
-      const dataStart = offset + 30 + nameLength + extraLength;
+      buf[eocdOffset] === 0x50 &&
+      buf[eocdOffset + 1] === 0x4b &&
+      buf[eocdOffset + 2] === 0x05 &&
+      buf[eocdOffset + 3] === 0x06
+    )
+      break;
+    eocdOffset--;
+  }
+  if (eocdOffset < 0) return null;
 
-      if (name.endsWith(".fit") && compressionMethod === 0) {
-        // Stored (no compression) — just slice the data
+  const cdOffset = buf.readUInt32LE(eocdOffset + 16);
+  const cdEntries = buf.readUInt16LE(eocdOffset + 10);
+
+  // Walk central directory entries: PK\x01\x02
+  let pos = cdOffset;
+  for (let i = 0; i < cdEntries; i++) {
+    if (
+      buf[pos] !== 0x50 ||
+      buf[pos + 1] !== 0x4b ||
+      buf[pos + 2] !== 0x01 ||
+      buf[pos + 3] !== 0x02
+    )
+      break;
+
+    const method = buf.readUInt16LE(pos + 10);
+    const compressedSize = buf.readUInt32LE(pos + 20);
+    const uncompressedSize = buf.readUInt32LE(pos + 24);
+    const nameLength = buf.readUInt16LE(pos + 28);
+    const extraLength = buf.readUInt16LE(pos + 30);
+    const commentLength = buf.readUInt16LE(pos + 32);
+    const localHeaderOffset = buf.readUInt32LE(pos + 42);
+    const name = buf.toString("utf-8", pos + 46, pos + 46 + nameLength);
+
+    if (name.endsWith(".fit")) {
+      // Read local header to find data start
+      const localNameLen = buf.readUInt16LE(localHeaderOffset + 26);
+      const localExtraLen = buf.readUInt16LE(localHeaderOffset + 28);
+      const dataStart = localHeaderOffset + 30 + localNameLen + localExtraLen;
+
+      if (method === 0) {
         const data = buf.subarray(dataStart, dataStart + uncompressedSize);
         return { name: `${activityId}.fit`, data: Buffer.from(data) };
       }
-
-      if (name.endsWith(".fit") && compressionMethod === 8) {
-        // Deflate compressed — use Node's zlib
-        const compressed = buf.subarray(dataStart, dataStart + compressedSize);
+      if (method === 8) {
+        const compressed = buf.subarray(
+          dataStart,
+          dataStart + compressedSize
+        );
         const data = inflateRawSync(compressed);
         return { name: `${activityId}.fit`, data };
       }
-
-      // Skip to next file header
-      offset = dataStart + compressedSize;
-    } else {
-      offset++;
     }
+
+    pos += 46 + nameLength + extraLength + commentLength;
   }
   return null;
 }
-
-import { inflateRawSync } from "node:zlib";
