@@ -42,10 +42,9 @@ async function callResource(
 ): Promise<ResourceResult> {
   const resource = (server as any)._registeredResources[uri];
   if (!resource) throw new Error(`Resource not registered: ${uri}`);
-  const result = (await resource.readCallback(
-    new URL(uri),
-    { signal: new AbortController().signal }
-  )) as ResourceResult;
+  const result = (await resource.readCallback(new URL(uri), {
+    signal: new AbortController().signal,
+  })) as ResourceResult;
   return result;
 }
 
@@ -82,7 +81,10 @@ const resourceTests: TestCase[] = [
       };
       if (!data.workoutName) throw new Error("no workoutName");
       if (!data.sportType?.sportTypeKey) throw new Error("no sportTypeKey");
-      if (!Array.isArray(data.workoutSegments) || data.workoutSegments.length === 0)
+      if (
+        !Array.isArray(data.workoutSegments) ||
+        data.workoutSegments.length === 0
+      )
         throw new Error("no workoutSegments");
     },
   },
