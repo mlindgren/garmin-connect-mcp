@@ -157,6 +157,12 @@ export class GarminClient {
     if (result.status === 204 || (result.status === 200 && !result.body)) {
       return { noData: true, status: result.status, path };
     }
+    if (result.status === 401) {
+      // Invalidate the singleton so the next call re-reads the session file
+      _sharedClient = null;
+      await this.close();
+      throw new Error(`Garmin API 401: ${path} — ${result.body}`);
+    }
     if (result.status !== 200) {
       throw new Error(`Garmin API ${result.status}: ${path} — ${result.body}`);
     }
@@ -280,6 +286,13 @@ export function getSharedClient(): GarminClient {
     _sharedClient = new GarminClient();
   }
   return _sharedClient;
+}
+
+export async function resetSharedClient(): Promise<void> {
+  if (_sharedClient) {
+    await _sharedClient.close();
+    _sharedClient = null;
+  }
 }
 
 // Clean up on process exit

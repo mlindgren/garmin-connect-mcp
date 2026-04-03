@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { inflateRawSync } from "node:zlib";
 import {
   getSharedClient,
+  resetSharedClient,
   sessionExists,
   getSessionFile,
 } from "./garmin-client.js";
@@ -119,6 +120,8 @@ To authenticate, you need the Playwright MCP server installed (\`@playwright/mcp
         return jsonResult({ status: "ok", profile });
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        // Reset the singleton so the next attempt re-reads the session file
+        await resetSharedClient();
         return errorResult(
           `Session invalid or expired: ${msg}\nCall the garmin-login tool to re-authenticate.`
         );
