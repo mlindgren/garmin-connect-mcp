@@ -781,9 +781,9 @@ IMPORTANT: Step types must use Garmin's DTO format:
 IMPORTANT: For heart rate zone targets, use "zoneNumber" (1-5), NOT targetValueOne/targetValueTwo.
 targetValueOne/targetValueTwo are only for absolute value ranges (e.g. pace in m/s, power in watts).
 
-Sport type IDs: 1=running, 2=cycling, 3=swimming, 4=walking, 5=multi, 6=fitness, 7=hiking.
+Sport type IDs: 1=running, 2=cycling, 3=swimming, 4=walking, 5=strength_training, 6=fitness_equipment, 7=hiking.
 Step type IDs: warmup (1), cooldown (2), interval (3), recovery (4), rest (5).
-End condition IDs: distance (1, value in meters), time (2, value in seconds), open (7, no value needed).
+End condition IDs: time (2, value in seconds), distance (3, value in meters), lap.button (7, no value), reps (10, value = rep count — use for strength exercises).
 Target type IDs: no.target (1), speed (2, m/s range via targetValueOne/targetValueTwo), heart.rate.zone (4, use zoneNumber 1-5), power.zone (11, use zoneNumber).
 
 **Available Templates:**
